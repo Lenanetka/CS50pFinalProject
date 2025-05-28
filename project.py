@@ -15,6 +15,7 @@ def main():
             dpg.add_menu_item(label="Save", callback=lambda s, a, u: save_words())
             dpg.add_menu_item(label="Exit", callback=lambda s, a, u: dpg.stop_dearpygui()) 
 
+    add_word_input()
     unknown_words_table()
     known_words_table()   
 
@@ -25,22 +26,24 @@ def main():
     
     save_words()
 
+def add_word_input():
+    with dpg.window(label="Enter new word", no_title_bar=True, no_resize=True, pos=(0,20)):
+        with dpg.group(horizontal=True):
+            dpg.add_input_text(
+                tag="input_word",
+                hint="Add new word",
+                width=400,
+                on_enter=True,
+                callback=lambda s, a, u: (add_word(dpg.get_value(u)), dpg.set_value(u, "")),
+                user_data="input_word"
+            )
+            dpg.add_button(label="Add", callback=lambda s, a, u: (add_word(dpg.get_value("input_word")), dpg.set_value("input_word", "")), width=50)
+
 def unknown_words_table():
     
     global words_unknown
-    with dpg.window(label="Unknown words", width=500, height=600, pos=(0,0)):
+    with dpg.window(label="Unknown words", tag="unknown_words_window", no_title_bar=True, no_resize=True, width=500, height=500, pos=(0,70)):
         with dpg.table(header_row=False):
-
-            with dpg.table_row():
-                dpg.add_input_text(
-                    tag="input_word_unknown",
-                    hint="Add new word",
-                    width=-1,
-                    on_enter=True,
-                    callback=lambda s, a, u: (add_word(dpg.get_value(u)), dpg.set_value(u, "")),
-                    user_data="input_word_unknown"
-                )
-                dpg.add_button(label="Add", callback=lambda s, a, u: add_word(dpg.get_value("input_word_unknown")), width=50)
 
             for _ in range(5):
                 dpg.add_table_column() 
@@ -62,7 +65,7 @@ def unknown_words_table():
 
 def known_words_table():
     global words_known
-    with dpg.window(label="Known words", width=500, height=600, pos=(500,0)):
+    with dpg.window(label="Known words", tag="known_words_window", no_title_bar=True, no_resize=True, width=500, height=500, pos=(500,70)):
         with dpg.table(header_row=False):
 
             for _ in range(6):
@@ -84,6 +87,14 @@ def known_words_table():
                     dpg.add_text(w.learned.isoformat() if w.learned else "")
                     dpg.add_text(w.learning_period)    
                     dpg.add_button(label="Delete", callback=lambda s, a, u: delete_word_known(w)) 
+
+def refresh_tables():
+    if dpg.does_item_exist("unknown_words_window"):
+        dpg.delete_item("unknown_words_window")
+    if dpg.does_item_exist("known_words_window"):
+        dpg.delete_item("known_words_window")
+    unknown_words_table()
+    known_words_table()
 
 def load_words():
     global words_known, words_unknown
@@ -126,6 +137,7 @@ def add_word(word: str):
     w = Word(word)
     words_unknown.insert(0, w)
     print (f"Word '{word}' added to unknown words.")
+    refresh_tables()
 
 def learn_word(word: str):
     global words_known, words_unknown
@@ -135,6 +147,7 @@ def learn_word(word: str):
         w.learn()
         words_known.insert(0, w.learn())
     print(f"Word '{word}' moved to known words.")
+    refresh_tables()
 
 def forget_word(word: str):
     global words_known, words_unknown
@@ -143,6 +156,7 @@ def forget_word(word: str):
         words_known.remove(w)
         words_unknown.insert(0, w.forget())
     print(f"Word '{word}' moved to unknown words.")
+    refresh_tables()
 
 def delete_word_unknown(word: Word):
     print(word)
@@ -150,14 +164,17 @@ def delete_word_unknown(word: Word):
     if word in words_unknown:
         words_unknown.remove(word)
         print(f"Word '{word.word}' deleted.")
+        refresh_tables()
     else:
         print(f"Word '{word.word}' not found in unknown words.")
+        
 
 def delete_word_known(word: Word):
     global words_known
     if word in words_known:
         words_known.remove(word)
         print(f"Word '{word.word}' deleted.")
+        refresh_tables()
     else:
         print(f"Word '{word.word}' not found in known words.")
 
