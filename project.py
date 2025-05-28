@@ -57,11 +57,11 @@ def unknown_words_table():
 
             for w in words_unknown:
                 with dpg.table_row():
-                    dpg.add_checkbox(label="", default_value=False, callback=lambda s, a, u: learn_word(w.word))
+                    dpg.add_checkbox(label="", default_value=False, callback=learn_word, user_data=w.word)
                     dpg.add_text(w.word)
                     dpg.add_text(w.added.isoformat() if w.added else "")
                     dpg.add_text(w.learning_period)
-                    dpg.add_button(label="Delete", callback=lambda s, a, u: delete_word_unknown(w))
+                    dpg.add_button(label="Delete", callback=delete_word_unknown, user_data=w)
 
 def known_words_table():
     global words_known
@@ -81,12 +81,12 @@ def known_words_table():
 
             for w in words_known:
                 with dpg.table_row():
-                    dpg.add_checkbox(label="", default_value=True, callback=lambda s, a, u: forget_word(w.word))
+                    dpg.add_checkbox(label="", default_value=True, callback=forget_word, user_data=w.word)
                     dpg.add_text(w.word)
                     dpg.add_text(w.added.isoformat() if w.added else "")
                     dpg.add_text(w.learned.isoformat() if w.learned else "")
                     dpg.add_text(w.learning_period)    
-                    dpg.add_button(label="Delete", callback=lambda s, a, u: delete_word_known(w)) 
+                    dpg.add_button(label="Delete", callback=delete_word_known, user_data=w) 
 
 def refresh_tables():
     if dpg.does_item_exist("unknown_words_window"):
@@ -101,11 +101,9 @@ def load_words():
     words: list = Word.read_from_csv()
 
     words_known = filter(lambda word: word.is_known, words)
-    words_known = sorted(words_known, key=lambda word: word.word)
     words_known = sorted(words_known, key=lambda word: word.learned, reverse=True)
 
     words_unknown = filter(lambda word: not word.is_known, words)
-    words_unknown = sorted(words_unknown, key=lambda word: word.word)
     words_unknown = sorted(words_unknown, key=lambda word: word.added, reverse=True)
 
     print("Words loaded successfully.")
@@ -139,44 +137,44 @@ def add_word(word: str):
     print (f"Word '{word}' added to unknown words.")
     refresh_tables()
 
-def learn_word(word: str):
+def learn_word(sender, app_data, user_data: str):
     global words_known, words_unknown
-    w = find_word_unknown(word)
+    w = find_word_unknown(user_data)
     if w is not None:
         words_unknown.remove(w)
         w.learn()
         words_known.insert(0, w.learn())
-    print(f"Word '{word}' moved to known words.")
+    print(f"Word '{user_data}' moved to known words.")
     refresh_tables()
 
-def forget_word(word: str):
+def forget_word(sender, app_data, user_data: str):
     global words_known, words_unknown
-    w = find_word_known(word)
+    w = find_word_known(user_data)
     if w is not None:
         words_known.remove(w)
         words_unknown.insert(0, w.forget())
-    print(f"Word '{word}' moved to unknown words.")
+    print(f"Word '{user_data}' moved to unknown words.")
     refresh_tables()
 
-def delete_word_unknown(word: Word):
-    print(word)
+def delete_word_unknown(sender, app_data, user_data: Word):
+    print(user_data)
     global words_unknown
-    if word in words_unknown:
-        words_unknown.remove(word)
-        print(f"Word '{word.word}' deleted.")
+    if user_data in words_unknown:
+        words_unknown.remove(user_data)
+        print(f"Word '{user_data.word}' deleted.")
         refresh_tables()
     else:
-        print(f"Word '{word.word}' not found in unknown words.")
+        print(f"Word '{user_data.word}' not found in unknown words.")
         
 
-def delete_word_known(word: Word):
+def delete_word_known(sender, app_data, user_data: Word):
     global words_known
-    if word in words_known:
-        words_known.remove(word)
-        print(f"Word '{word.word}' deleted.")
+    if user_data in words_known:
+        words_known.remove(user_data)
+        print(f"Word '{user_data.word}' deleted.")
         refresh_tables()
     else:
-        print(f"Word '{word.word}' not found in known words.")
+        print(f"Word '{user_data.word}' not found in known words.")
 
 if __name__ == "__main__":
     main()
