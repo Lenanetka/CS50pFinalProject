@@ -45,7 +45,7 @@ def unknown_words_table():
 
             for w in project.words_unknown:
                 with dpg.table_row():
-                    dpg.add_checkbox(label="", default_value=False, callback=learn_word, user_data=w.word)
+                    dpg.add_checkbox(label="", default_value=False, callback=learn_word, user_data=w)
                     dpg.add_text(w.word)
                     dpg.add_text(w.learning_period)
                     dpg.add_button(label="Listen", callback=listen_word, user_data=w)
@@ -63,7 +63,7 @@ def known_words_table():
 
             for w in project.words_known:
                 with dpg.table_row():
-                    dpg.add_checkbox(label="", default_value=True, callback=forget_word, user_data=w.word)
+                    dpg.add_checkbox(label="", default_value=True, callback=forget_word, user_data=w)
                     dpg.add_text(w.word)
                     dpg.add_text(w.learning_period)
                     dpg.add_button(label="Listen", callback=listen_word, user_data=w)

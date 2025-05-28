@@ -14,7 +14,7 @@ class Word:
         self.learned = learned
 
     def __str__(self):
-        return f"Word: '{self.word}', added: {self.added}, learned: {self.learned}"
+        return self.word
     
     def dictionary(self) -> dict:
         return {
