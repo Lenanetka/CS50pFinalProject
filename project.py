@@ -14,10 +14,10 @@ def main():
 
     print(f"Unknown words ({len(words_unknown)}):")
     for word in words_unknown:
-        print(word)
+        print(word, word.learning_period)
     print(f"Known words ({len(words_known)}):")
     for word in words_known:
-        print(word)
+        print(word, word.learning_period)
 
     input("Press Enter to save and quit...")
     save_words()
@@ -29,7 +29,7 @@ def load_words():
     words_known = filter(lambda word: word.is_known, words)
     words_known = sorted(words_known, key=lambda word: word.word)
     words_known = sorted(words_known, key=lambda word: word.learned, reverse=True)
-    
+
     words_unknown = filter(lambda word: not word.is_known, words)
     words_unknown = sorted(words_unknown, key=lambda word: word.word)
     words_unknown = sorted(words_unknown, key=lambda word: word.added, reverse=True)

@@ -69,6 +69,21 @@ class Word:
     @property
     def is_known(self) -> bool:
         return self.learned is not None
+    
+    @property
+    def learning_period(self) -> str:
+        from_date = self.added
+        to_date = self.learned if self.learned else date.today()
+        days = abs((to_date - from_date).days)
+        if days == 1:
+            return "1 day"
+        if days < 30 * 3:
+            return f"{days} days"
+        if days < 365 * 3:
+            months = days // 30
+            return f"{months} months"
+        years = days // 365
+        return f"{years} years"
 
     @classmethod
     def read_from_csv(cls) -> list:
