@@ -43,49 +43,35 @@ def unknown_words_table():
     
     global words_unknown
     with dpg.window(label="Unknown words", tag="unknown_words_window", no_title_bar=True, no_resize=True, width=500, height=500, pos=(0,70)):
-        with dpg.table(header_row=False):
+        with dpg.table():
 
-            for _ in range(5):
-                dpg.add_table_column() 
-
-            with dpg.table_row():
-                dpg.add_text("Known")
-                dpg.add_text("Word")
-                dpg.add_text("Added")
-                dpg.add_text("Period")
-                dpg.add_text("Delete")
+            dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
+            dpg.add_table_column(label="Word") 
+            dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
+            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False) 
 
             for w in words_unknown:
                 with dpg.table_row():
                     dpg.add_checkbox(label="", default_value=False, callback=learn_word, user_data=w.word)
                     dpg.add_text(w.word)
-                    dpg.add_text(w.added.isoformat() if w.added else "")
                     dpg.add_text(w.learning_period)
                     dpg.add_button(label="Delete", callback=delete_word_unknown, user_data=w)
 
 def known_words_table():
     global words_known
     with dpg.window(label="Known words", tag="known_words_window", no_title_bar=True, no_resize=True, width=500, height=500, pos=(500,70)):
-        with dpg.table(header_row=False):
+        with dpg.table():
 
-            for _ in range(6):
-                dpg.add_table_column()
-
-            with dpg.table_row():
-                dpg.add_text("Known")
-                dpg.add_text("Word")
-                dpg.add_text("Added")
-                dpg.add_text("Learned")
-                dpg.add_text("Period")
-                dpg.add_text("Delete")
+            dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
+            dpg.add_table_column(label="Word") 
+            dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
+            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)  
 
             for w in words_known:
                 with dpg.table_row():
                     dpg.add_checkbox(label="", default_value=True, callback=forget_word, user_data=w.word)
                     dpg.add_text(w.word)
-                    dpg.add_text(w.added.isoformat() if w.added else "")
-                    dpg.add_text(w.learned.isoformat() if w.learned else "")
-                    dpg.add_text(w.learning_period)    
+                    dpg.add_text(w.learning_period)
                     dpg.add_button(label="Delete", callback=delete_word_known, user_data=w) 
 
 def refresh_tables():
