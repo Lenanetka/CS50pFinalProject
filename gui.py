@@ -5,12 +5,7 @@ def run():
     project.load_words()
 
     dpg.create_context()
-
     dpg.create_viewport(title='Repeat Pronunciation', width=1000, height=600)
-    with dpg.viewport_menu_bar():
-        with dpg.menu(label="File"):
-            dpg.add_menu_item(label="Save", callback=project.save_words)
-            dpg.add_menu_item(label="Exit", callback=dpg.stop_dearpygui) 
 
     add_word_input()
     unknown_words_table()
@@ -24,7 +19,7 @@ def run():
     project.save_words()
 
 def add_word_input():
-    with dpg.window(label="Enter new word", no_title_bar=True, no_resize=True, pos=(0,20)):
+    with dpg.window(label="Enter new word", no_title_bar=True, no_resize=True, pos=(0,0)):
         with dpg.group(horizontal=True):
             dpg.add_input_text(
                 tag="input_word",
