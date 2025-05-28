@@ -1,14 +1,21 @@
 from datetime import date
 import csv
+import re
 
 class Word:
     WORDS_CSV = "words.csv"
 
     def __init__(self, word, added=None, learned=None):
         if isinstance(word, dict):
-            added = word["added"]
-            learned = word["learned"]
-            word = word["word"]
+            keys = list(word.keys())
+            if "added" in keys:
+                added = word["added"]
+            if "learned" in keys:
+                learned = word["learned"]
+            if "word" in keys:
+                word = word["word"]
+            else:
+                word = word[keys[0]]
         self.word = word
         self.added = added
         self.learned = learned
@@ -39,12 +46,9 @@ class Word:
         return self._word
     @word.setter
     def word(self, word):
-        if word.strip() is None:
-            raise ValueError("Word cannot be None")
-        if not isinstance(word, str):
-            raise ValueError("Word must be a string")
+        word = Word.sanitize(word)
         if word.strip() == "":
-            raise ValueError("Word cannot be empty")
+            raise ValueError("Word must be a non-empty string")
         self._word = word.strip()
 
     @property
@@ -85,6 +89,22 @@ class Word:
             return f"{months} months"
         years = days // 365
         return f"{years} years"
+
+    @classmethod
+    def sanitize(self, text: str) -> str:
+        if not isinstance(text, str):
+            return ""
+        # remove unsupported characters
+        text = re.sub(r"[^a-zA-Z' -]", "", text)
+        # remove multiple spaces
+        text = re.sub(r"\s{2,}", " ", text)
+        # remove multiple apostrophes
+        text = re.sub(r"'{2,}", "'", text)
+        # remove multiple hyphens
+        text = re.sub(r"-{2,}", "-", text)
+        # remove leading and trailing apostrophes and hyphens
+        text = re.sub(r"^[ '-]+|[ '-]+$", "", text)
+        return text.strip().lower()
 
     @classmethod
     def read_from_csv(cls) -> list:

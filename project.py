@@ -24,9 +24,7 @@ def save_words():
     print("Words saved successfully.")
 
 def add_word(text: str):
-    if not isinstance(text, str):
-        return
-    text = text.strip().lower()
+    text = Word.sanitize(text)
     if text == "":
         return
     global words_known, words_unknown
