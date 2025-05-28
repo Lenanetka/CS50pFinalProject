@@ -31,6 +31,7 @@ class Word:
     def forget(self) -> 'Word':
         if self.is_known:
             self.learned = None
+            self.added = date.today()
         return self
     
     @property
