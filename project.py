@@ -1,26 +1,89 @@
 from word import Word
+import dearpygui.dearpygui as dpg
 
 words_unknown = []
 words_known = []
 
 def main():
     load_words()
-    print("Words loaded successfully.")
 
-    add_word("example")
-    learn_word("example")
-    forget_word("example")
-    delete_word("example")
+    dpg.create_context()
 
-    print(f"Unknown words ({len(words_unknown)}):")
-    for word in words_unknown:
-        print(word, word.learning_period)
-    print(f"Known words ({len(words_known)}):")
-    for word in words_known:
-        print(word, word.learning_period)
+    dpg.create_viewport(title='Repeat Pronunciation', width=1000, height=600)
+    with dpg.viewport_menu_bar():
+        with dpg.menu(label="File"):
+            dpg.add_menu_item(label="Save", callback=lambda s, a, u: save_words())
+            dpg.add_menu_item(label="Exit", callback=lambda s, a, u: dpg.stop_dearpygui()) 
 
-    input("Press Enter to save and quit...")
+    unknown_words_table()
+    known_words_table()   
+
+    dpg.setup_dearpygui()
+    dpg.show_viewport()
+    dpg.start_dearpygui()
+    dpg.destroy_context()
+    
     save_words()
+
+def unknown_words_table():
+    
+    global words_unknown
+    with dpg.window(label="Unknown words", width=500, height=600, pos=(0,0)):
+        with dpg.table(header_row=False):
+
+            with dpg.table_row():
+                dpg.add_input_text(
+                    tag="input_word_unknown",
+                    hint="Add new word",
+                    width=-1,
+                    on_enter=True,
+                    callback=lambda s, a, u: (add_word(dpg.get_value(u)), dpg.set_value(u, "")),
+                    user_data="input_word_unknown"
+                )
+                dpg.add_button(label="Add", callback=lambda s, a, u: add_word(dpg.get_value("input_word_unknown")), width=50)
+
+            for _ in range(5):
+                dpg.add_table_column() 
+
+            with dpg.table_row():
+                dpg.add_text("Known")
+                dpg.add_text("Word")
+                dpg.add_text("Added")
+                dpg.add_text("Period")
+                dpg.add_text("Delete")
+
+            for w in words_unknown:
+                with dpg.table_row():
+                    dpg.add_checkbox(label="", default_value=False, callback=lambda s, a, u: learn_word(w.word))
+                    dpg.add_text(w.word)
+                    dpg.add_text(w.added.isoformat() if w.added else "")
+                    dpg.add_text(w.learning_period)
+                    dpg.add_button(label="Delete", callback=lambda s, a, u: delete_word_unknown(w))
+
+def known_words_table():
+    global words_known
+    with dpg.window(label="Known words", width=500, height=600, pos=(500,0)):
+        with dpg.table(header_row=False):
+
+            for _ in range(6):
+                dpg.add_table_column()
+
+            with dpg.table_row():
+                dpg.add_text("Known")
+                dpg.add_text("Word")
+                dpg.add_text("Added")
+                dpg.add_text("Learned")
+                dpg.add_text("Period")
+                dpg.add_text("Delete")
+
+            for w in words_known:
+                with dpg.table_row():
+                    dpg.add_checkbox(label="", default_value=True, callback=lambda s, a, u: forget_word(w.word))
+                    dpg.add_text(w.word)
+                    dpg.add_text(w.added.isoformat() if w.added else "")
+                    dpg.add_text(w.learned.isoformat() if w.learned else "")
+                    dpg.add_text(w.learning_period)    
+                    dpg.add_button(label="Delete", callback=lambda s, a, u: delete_word_known(w)) 
 
 def load_words():
     global words_known, words_unknown
@@ -34,10 +97,13 @@ def load_words():
     words_unknown = sorted(words_unknown, key=lambda word: word.word)
     words_unknown = sorted(words_unknown, key=lambda word: word.added, reverse=True)
 
+    print("Words loaded successfully.")
+
 def save_words():
     global words_known, words_unknown
     words = words_unknown + words_known
     Word.save_to_csv(words)
+    print("Words saved successfully.")
 
 def find_word_known(word: str) -> Word:
     global words_known
@@ -59,6 +125,7 @@ def add_word(word: str):
     global words_unknown
     w = Word(word)
     words_unknown.insert(0, w)
+    print (f"Word '{word}' added to unknown words.")
 
 def learn_word(word: str):
     global words_known, words_unknown
@@ -67,6 +134,7 @@ def learn_word(word: str):
         words_unknown.remove(w)
         w.learn()
         words_known.insert(0, w.learn())
+    print(f"Word '{word}' moved to known words.")
 
 def forget_word(word: str):
     global words_known, words_unknown
@@ -74,16 +142,24 @@ def forget_word(word: str):
     if w is not None:
         words_known.remove(w)
         words_unknown.insert(0, w.forget())
+    print(f"Word '{word}' moved to unknown words.")
 
-def delete_word(word: str):
-    global words_known, words_unknown
-    w = find_word_known(word)
-    if w is not None:
-        words_known.remove(w)
-    w = find_word_unknown(word)
-    if w is not None:
-        words_unknown.remove(w)
-        return
+def delete_word_unknown(word: Word):
+    print(word)
+    global words_unknown
+    if word in words_unknown:
+        words_unknown.remove(word)
+        print(f"Word '{word.word}' deleted.")
+    else:
+        print(f"Word '{word.word}' not found in unknown words.")
+
+def delete_word_known(word: Word):
+    global words_known
+    if word in words_known:
+        words_known.remove(word)
+        print(f"Word '{word.word}' deleted.")
+    else:
+        print(f"Word '{word.word}' not found in known words.")
 
 if __name__ == "__main__":
     main()
