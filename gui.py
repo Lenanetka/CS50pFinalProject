@@ -1,12 +1,8 @@
 import dearpygui.dearpygui as dpg
 import project
-from gtts import gTTS
-import pygame
-import os
 
 def run():
     project.load_words()
-
     dpg.create_context()
     dpg.create_viewport(title='Repeat Pronunciation', width=1000, height=600)
 
@@ -98,16 +94,10 @@ def forget_word(sender, app_data, user_data):
 def delete_word_unknown(sender, app_data, user_data):
     project.delete_word_unknown(user_data)
     refresh_tables()
-        
+
 def delete_word_known(sender, app_data, user_data):
     project.delete_word_known(user_data)
     refresh_tables()
 
 def listen_word(sender, app_data, user_data):
-    path = "audio/" + user_data.word.replace(" ", "_") + ".mp3"
-    if not os.path.isfile(path):
-        myobj = gTTS(text=user_data.word, lang='en', slow=False)
-        myobj.save(path)
-    pygame.mixer.init()
-    pygame.mixer.music.load(path)
-    pygame.mixer.music.play()
+    project.listen_word(user_data.word)
