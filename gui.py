@@ -1,5 +1,9 @@
 import dearpygui.dearpygui as dpg
+import sys
 import project
+import threading
+import subprocess
+import pyttsx3
 
 def run():
     project.load_words()
@@ -42,12 +46,14 @@ def unknown_words_table():
             dpg.add_table_column(label="Word") 
             dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
             dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False) 
+            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)
 
             for w in project.words_unknown:
                 with dpg.table_row():
                     dpg.add_checkbox(label="", default_value=False, callback=learn_word, user_data=w.word)
                     dpg.add_text(w.word)
                     dpg.add_text(w.learning_period)
+                    dpg.add_button(label="Listen", callback=listen_word, user_data=w)
                     dpg.add_button(label="Delete", callback=delete_word_unknown, user_data=w)
 
 def known_words_table():
@@ -57,6 +63,7 @@ def known_words_table():
             dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
             dpg.add_table_column(label="Word") 
             dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
+            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)
             dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)  
 
             for w in project.words_known:
@@ -64,6 +71,7 @@ def known_words_table():
                     dpg.add_checkbox(label="", default_value=True, callback=forget_word, user_data=w.word)
                     dpg.add_text(w.word)
                     dpg.add_text(w.learning_period)
+                    dpg.add_button(label="Listen", callback=listen_word, user_data=w)
                     dpg.add_button(label="Delete", callback=delete_word_known, user_data=w) 
 
 def refresh_tables():
@@ -92,7 +100,20 @@ def delete_word_unknown(sender, app_data, user_data):
     project.delete_word_unknown(user_data)
     refresh_tables()
         
-
 def delete_word_known(sender, app_data, user_data):
     project.delete_word_known(user_data)
     refresh_tables()
+
+def listen_word(sender, app_data, user_data):
+    if sys.platform == "darwin":
+        # macOS
+        print("Using subprocess for text-to-speech on macOS")
+        subprocess.run(["say", user_data.word])
+    else:
+        # Windows/Linux
+        print("Using pyttsx3 for text-to-speech on Windows/Linux")
+        engine = pyttsx3.init()
+        def speak():
+            engine.say(user_data.word)
+            engine.runAndWait()
+        threading.Thread(target=speak, daemon=True).start()
