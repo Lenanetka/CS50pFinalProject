@@ -1,9 +1,8 @@
 import dearpygui.dearpygui as dpg
-import sys
 import project
-import threading
-import subprocess
-import pyttsx3
+from gtts import gTTS
+import pygame
+import os
 
 def run():
     project.load_words()
@@ -105,15 +104,10 @@ def delete_word_known(sender, app_data, user_data):
     refresh_tables()
 
 def listen_word(sender, app_data, user_data):
-    if sys.platform == "darwin":
-        # macOS
-        print("Using subprocess for text-to-speech on macOS")
-        subprocess.run(["say", user_data.word])
-    else:
-        # Windows/Linux
-        print("Using pyttsx3 for text-to-speech on Windows/Linux")
-        engine = pyttsx3.init()
-        def speak():
-            engine.say(user_data.word)
-            engine.runAndWait()
-        threading.Thread(target=speak, daemon=True).start()
+    path = "audio/" + user_data.word.replace(" ", "_") + ".mp3"
+    if not os.path.isfile(path):
+        myobj = gTTS(text=user_data.word, lang='en', slow=False)
+        myobj.save(path)
+    pygame.mixer.init()
+    pygame.mixer.music.load(path)
+    pygame.mixer.music.play()
