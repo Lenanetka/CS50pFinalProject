@@ -1,86 +1,11 @@
 from word import Word
-import dearpygui.dearpygui as dpg
+import gui
 
 words_unknown = []
 words_known = []
 
 def main():
-    load_words()
-
-    dpg.create_context()
-
-    dpg.create_viewport(title='Repeat Pronunciation', width=1000, height=600)
-    with dpg.viewport_menu_bar():
-        with dpg.menu(label="File"):
-            dpg.add_menu_item(label="Save", callback=lambda s, a, u: save_words())
-            dpg.add_menu_item(label="Exit", callback=lambda s, a, u: dpg.stop_dearpygui()) 
-
-    add_word_input()
-    unknown_words_table()
-    known_words_table()   
-
-    dpg.setup_dearpygui()
-    dpg.show_viewport()
-    dpg.start_dearpygui()
-    dpg.destroy_context()
-    
-    save_words()
-
-def add_word_input():
-    with dpg.window(label="Enter new word", no_title_bar=True, no_resize=True, pos=(0,20)):
-        with dpg.group(horizontal=True):
-            dpg.add_input_text(
-                tag="input_word",
-                hint="Add new word",
-                width=400,
-                on_enter=True,
-                callback=lambda s, a, u: (add_word(dpg.get_value(u)), dpg.set_value(u, "")),
-                user_data="input_word"
-            )
-            dpg.add_button(label="Add", callback=lambda s, a, u: (add_word(dpg.get_value("input_word")), dpg.set_value("input_word", "")), width=50)
-
-def unknown_words_table():
-    
-    global words_unknown
-    with dpg.window(label="Unknown words", tag="unknown_words_window", no_title_bar=True, no_resize=True, width=500, height=500, pos=(0,70)):
-        with dpg.table():
-
-            dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
-            dpg.add_table_column(label="Word") 
-            dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
-            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False) 
-
-            for w in words_unknown:
-                with dpg.table_row():
-                    dpg.add_checkbox(label="", default_value=False, callback=learn_word, user_data=w.word)
-                    dpg.add_text(w.word)
-                    dpg.add_text(w.learning_period)
-                    dpg.add_button(label="Delete", callback=delete_word_unknown, user_data=w)
-
-def known_words_table():
-    global words_known
-    with dpg.window(label="Known words", tag="known_words_window", no_title_bar=True, no_resize=True, width=500, height=500, pos=(500,70)):
-        with dpg.table():
-
-            dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
-            dpg.add_table_column(label="Word") 
-            dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
-            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)  
-
-            for w in words_known:
-                with dpg.table_row():
-                    dpg.add_checkbox(label="", default_value=True, callback=forget_word, user_data=w.word)
-                    dpg.add_text(w.word)
-                    dpg.add_text(w.learning_period)
-                    dpg.add_button(label="Delete", callback=delete_word_known, user_data=w) 
-
-def refresh_tables():
-    if dpg.does_item_exist("unknown_words_window"):
-        dpg.delete_item("unknown_words_window")
-    if dpg.does_item_exist("known_words_window"):
-        dpg.delete_item("known_words_window")
-    unknown_words_table()
-    known_words_table()
+    gui.run()
 
 def load_words():
     global words_known, words_unknown
@@ -117,50 +42,47 @@ def find_word_unknown(word: str) -> Word:
 def add_word(word: str):
     if find_word_known(word) or find_word_unknown(word):
         return
+    if word is None or word.strip() == "":
+        return
     global words_unknown
     w = Word(word)
     words_unknown.insert(0, w)
     print (f"Word '{word}' added to unknown words.")
-    refresh_tables()
 
-def learn_word(sender, app_data, user_data: str):
+def learn_word(word: str):
     global words_known, words_unknown
-    w = find_word_unknown(user_data)
+    w = find_word_unknown(word)
     if w is not None:
         words_unknown.remove(w)
         w.learn()
         words_known.insert(0, w.learn())
-    print(f"Word '{user_data}' moved to known words.")
-    refresh_tables()
+    print(f"Word '{word}' moved to known words.")
 
-def forget_word(sender, app_data, user_data: str):
+def forget_word(word: str):
     global words_known, words_unknown
-    w = find_word_known(user_data)
+    w = find_word_known(word)
     if w is not None:
         words_known.remove(w)
         words_unknown.insert(0, w.forget())
-    print(f"Word '{user_data}' moved to unknown words.")
-    refresh_tables()
+    print(f"Word '{word}' moved to unknown words.")
 
-def delete_word_unknown(sender, app_data, user_data: Word):
-    print(user_data)
+def delete_word_unknown(word: Word):
+    print(word)
     global words_unknown
-    if user_data in words_unknown:
-        words_unknown.remove(user_data)
-        print(f"Word '{user_data.word}' deleted.")
-        refresh_tables()
+    if word in words_unknown:
+        words_unknown.remove(word)
+        print(f"Word '{word.word}' deleted.")
     else:
-        print(f"Word '{user_data.word}' not found in unknown words.")
+        print(f"Word '{word.word}' not found in unknown words.")
         
 
-def delete_word_known(sender, app_data, user_data: Word):
+def delete_word_known(word: Word):
     global words_known
-    if user_data in words_known:
-        words_known.remove(user_data)
-        print(f"Word '{user_data.word}' deleted.")
-        refresh_tables()
+    if word in words_known:
+        words_known.remove(word)
+        print(f"Word '{word.word}' deleted.")
     else:
-        print(f"Word '{user_data.word}' not found in known words.")
+        print(f"Word '{word.word}' not found in known words.")
 
 if __name__ == "__main__":
     main()
