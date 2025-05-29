@@ -7,28 +7,33 @@ class Word:
 
     def __init__(self, word, added=None, learned=None):
         if isinstance(word, dict):
-            keys = list(word.keys())
-            if "added" in keys:
-                added = word["added"]
-            if "learned" in keys:
-                learned = word["learned"]
-            if "word" in keys:
-                word = word["word"]
-            else:
-                word = word[keys[0]]
-        self.word = word
-        self.added = added
-        self.learned = learned
+            self.from_dictionary(word)
+        else:
+            self.word = word
+            self.added = added
+            self.learned = learned
 
     def __str__(self):
         return self.word
-    
+
     def dictionary(self) -> dict:
         return {
             "word": self.word,
             "added": self.added.isoformat() if self.added else None,
             "learned": self.learned.isoformat() if self.learned else None
         }
+    
+    def from_dictionary(self, data: dict) -> 'Word':
+        keys = list(data.keys())
+        if "word" in keys:
+            self.word = data["word"]
+        else:
+            self.word = data[keys[0]]
+        if "added" in keys:
+            self.added = data["added"]
+        if "learned" in keys:
+            self.learned = data["learned"]
+        return self
     
     def learn(self) -> 'Word':
         if not self.is_known:
@@ -56,20 +61,30 @@ class Word:
         return self._added
     @added.setter
     def added(self, added):
-        if added is None or (isinstance(added, str) and added.strip() == ""):
+        if isinstance(added, date):
+            self._added = added
+        elif not isinstance(added, str) or added.strip() == "":
             self._added = date.today()
         else:
-            self._added = parse_date(added)
+            try:
+                self._added = date.fromisoformat(added.strip())
+            except ValueError:
+                self._added = date.today()
         
     @property
     def learned(self):
         return self._learned
     @learned.setter
     def learned(self, learned):
-        if learned is None or (isinstance(learned, str) and learned.strip() == ""):
+        if isinstance(learned, date):
+            self._learned = learned
+        elif not isinstance(learned, str) or learned.strip() == "":
             self._learned = None
         else:
-            self._learned = parse_date(learned)
+            try:
+                self._learned = date.fromisoformat(learned.strip())
+            except ValueError:
+                self._learned = date.today()
 
     @property
     def is_known(self) -> bool:
@@ -94,6 +109,8 @@ class Word:
     def sanitize(self, text: str) -> str:
         if not isinstance(text, str):
             return ""
+        # cut length to 50 characters
+        text = text[:50]
         # remove unsupported characters
         text = re.sub(r"[^a-zA-Z' -]", "", text)
         # remove multiple spaces
@@ -111,7 +128,14 @@ class Word:
         try:
             with open(cls.WORDS_CSV, "r") as file:
                 words = csv.DictReader(file)
-                return [Word(word) for word in words]
+                result = []
+                for word in words:
+                    try:
+                        result.append(Word(word))
+                    # skip invalid words
+                    except ValueError:
+                        pass
+                return result
         except FileNotFoundError:
             return []
 
@@ -123,11 +147,3 @@ class Word:
             writer.writeheader()
             for word in words:
                 writer.writerow(word)
-
-def parse_date(d) -> date:
-    if isinstance(d, date):
-        return d
-    try:
-        return date.fromisoformat(d.strip())
-    except ValueError:
-        raise ValueError("Date must be in ISO format (YYYY-MM-DD)")
