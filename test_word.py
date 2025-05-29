@@ -64,6 +64,20 @@ def test_forget():
     assert word.added == date.today()
     assert word.is_known == False
 
+def test_learning_period():
+    word = Word("test", date(2023, 10, 1), date(2023, 10, 1))
+    assert word.learning_period == "0 days"
+    word = Word("test", date(2023, 10, 1), date(2023, 10, 2))
+    assert word.learning_period == "1 day"
+    word = Word("test", date(2023, 10, 1), date(2023, 12, 29))
+    assert word.learning_period == "89 days"
+    word = Word("test", date(2023, 10, 1), date(2023, 12, 30))
+    assert word.learning_period == "3 months"
+    word = Word("test", date(2020, 1, 1), date(2022, 12, 30))
+    assert word.learning_period == "36 months"
+    word = Word("test", date(2020, 1, 1), date(2022, 12, 31))
+    assert word.learning_period == "3 years"
+
 def test_sanitize():
     assert Word.sanitize("word") == "word"
     assert Word.sanitize("  test with spaces  ") == "test with spaces"
