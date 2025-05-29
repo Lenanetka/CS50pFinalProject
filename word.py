@@ -3,8 +3,6 @@ import csv
 import re
 
 class Word:
-    WORDS_CSV = "words.csv"
-
     def __init__(self, word, added=None, learned=None):
         self.added = added
         self.learned = learned
@@ -124,9 +122,9 @@ class Word:
         return text.strip().lower()
 
     @classmethod
-    def read_from_csv(cls) -> list:
+    def read_from_csv(cls, words_csv) -> list:
         try:
-            with open(cls.WORDS_CSV, "r") as file:
+            with open(words_csv, "r") as file:
                 words = csv.DictReader(file)
                 result = []
                 for word in words:
@@ -140,9 +138,9 @@ class Word:
             return []
 
     @classmethod
-    def save_to_csv(cls, words: list):
+    def save_to_csv(cls, words: list, words_csv):
         words = [word.dictionary() for word in words]
-        with open(cls.WORDS_CSV, "w") as file:
+        with open(words_csv, "w") as file:
             writer = csv.DictWriter(file, fieldnames=["word", "added", "learned"])
             writer.writeheader()
             for word in words:

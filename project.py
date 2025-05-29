@@ -2,15 +2,26 @@ from word import Word
 import gui
 import audio
 
+WORDS_CSV = "words.csv"
 words_unknown = []
 words_known = []
 
 def main():
     gui.run()
 
+def set_words_csv(path: str):
+    global WORDS_CSV
+    path = path.strip()
+    if path == "":
+        raise ValueError("File path cannot be empty.")
+    if path[-4:] != ".csv":
+        raise ValueError("File extension must be'.csv'.")
+    WORDS_CSV = path
+    print(f"Words CSV file path set to: {path}")
+
 def load_words():
-    global words_known, words_unknown
-    words: list = Word.read_from_csv()
+    global words_known, words_unknown, WORDS_CSV
+    words: list = Word.read_from_csv(WORDS_CSV)
     words_known = filter(lambda word: word.is_known, words)
     words_known = sorted(words_known, key=lambda word: word.learned, reverse=True)
     words_unknown = filter(lambda word: not word.is_known, words)
@@ -20,7 +31,7 @@ def load_words():
 def save_words():
     global words_known, words_unknown
     words = words_unknown + words_known
-    Word.save_to_csv(words)
+    Word.save_to_csv(words, WORDS_CSV)
     print("Words saved successfully.")
 
 def add_word(text: str):
