@@ -2,8 +2,14 @@ from gtts import gTTS
 import pygame
 import os
 
+def audio_folder() -> str:
+    audio_folder = "audio"
+    if not os.path.exists(audio_folder):
+        os.makedirs(audio_folder)
+    return audio_folder
+
 def audio_path(word: str) -> str:
-    return "audio/" + word.replace(" ", "_") + ".mp3"
+    return audio_folder() + "/" + word.replace(" ", "_") + ".mp3"
 
 def download_audio(word: str) -> None:
     path = audio_path(word)
