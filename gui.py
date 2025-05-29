@@ -6,9 +6,7 @@ def run():
     dpg.create_context()
     dpg.create_viewport(title='Repeat Pronunciation', width=1000, height=600)
 
-    add_word_input()
-    unknown_words_table()
-    known_words_table()
+    layout()
 
     dpg.setup_dearpygui()
     dpg.show_viewport()
@@ -17,65 +15,74 @@ def run():
 
     project.save_words()
 
+def layout():
+    with dpg.window(no_title_bar=True, width=1000, height=600, pos=(0, 0)):
+        with dpg.child_window(autosize_x=True, height=40):
+            with dpg.group(horizontal=True):
+                add_word_input()
+        with dpg.child_window(tag="tables_container", autosize_x=True, autosize_y=True):
+            with dpg.group(horizontal=True):
+                unknown_words_table()
+                known_words_table()
+
 def add_word_input():
-    with dpg.window(label="Enter new word", no_title_bar=True, no_resize=True, pos=(0,0)):
-        with dpg.group(horizontal=True):
-            dpg.add_input_text(
-                tag="input_word",
-                hint="Add new word",
-                width=400,
-                on_enter=True,
-                callback=add_word
-            )
-            dpg.add_button(
-                label="Add", 
-                callback=add_word,
-                width=50
-            )
+    dpg.add_input_text(
+        tag="input_word",
+        hint="Add new word",
+        width=400,
+        on_enter=True,
+        callback=add_word
+    )
+    dpg.add_button(
+        label="Add", 
+        callback=add_word,
+        width=50
+    )
 
 def unknown_words_table():
-    with dpg.window(label="Unknown words", tag="unknown_words_window", no_title_bar=True, no_resize=True, width=500, height=500, pos=(0,70)):
-        with dpg.table():
+    with dpg.group():
+        dpg.add_text("Listen to the pronunciation until you memorize")
+        with dpg.child_window(width=480, horizontal_scrollbar=True):
+            with dpg.table():
+                dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
+                dpg.add_table_column(label="Word") 
+                dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
+                dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False) 
+                dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)
 
-            dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
-            dpg.add_table_column(label="Word") 
-            dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
-            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False) 
-            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)
-
-            for w in project.words_unknown:
-                with dpg.table_row():
-                    dpg.add_checkbox(label="", default_value=False, callback=learn_word, user_data=w)
-                    dpg.add_text(w.word)
-                    dpg.add_text(w.learning_period)
-                    dpg.add_button(label="Listen", callback=listen_word, user_data=w)
-                    dpg.add_button(label="Delete", callback=delete_word_unknown, user_data=w)
+                for w in project.words_unknown:
+                    with dpg.table_row():
+                        dpg.add_checkbox(label="", default_value=False, callback=learn_word, user_data=w)
+                        dpg.add_text(w.word)
+                        dpg.add_text(w.learning_period)
+                        dpg.add_button(label="Listen", callback=listen_word, user_data=w)
+                        dpg.add_button(label="Delete", callback=delete_word_unknown, user_data=w)
 
 def known_words_table():
-    with dpg.window(label="Known words", tag="known_words_window", no_title_bar=True, no_resize=True, width=500, height=500, pos=(500,70)):
-        with dpg.table():
+    with dpg.group():
+        dpg.add_text("You have memorized the pronunciation of these words")
+        with dpg.child_window(width=480, horizontal_scrollbar=True):
+            with dpg.table():
+                dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
+                dpg.add_table_column(label="Word") 
+                dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
+                dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)
+                dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)  
 
-            dpg.add_table_column(label="Known", width_fixed=True, init_width_or_weight=40, width_stretch=False) 
-            dpg.add_table_column(label="Word") 
-            dpg.add_table_column(label="Learning", width_fixed=True, init_width_or_weight=75, width_stretch=False) 
-            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)
-            dpg.add_table_column(label="", width_fixed=True, init_width_or_weight=60, width_stretch=False)  
-
-            for w in project.words_known:
-                with dpg.table_row():
-                    dpg.add_checkbox(label="", default_value=True, callback=forget_word, user_data=w)
-                    dpg.add_text(w.word)
-                    dpg.add_text(w.learning_period)
-                    dpg.add_button(label="Listen", callback=listen_word, user_data=w)
-                    dpg.add_button(label="Delete", callback=delete_word_known, user_data=w) 
+                for w in project.words_known:
+                    with dpg.table_row():
+                        dpg.add_checkbox(label="", default_value=True, callback=forget_word, user_data=w)
+                        dpg.add_text(w.word)
+                        dpg.add_text(w.learning_period)
+                        dpg.add_button(label="Listen", callback=listen_word, user_data=w)
+                        dpg.add_button(label="Delete", callback=delete_word_known, user_data=w) 
 
 def refresh_tables():
-    if dpg.does_item_exist("unknown_words_window"):
-        dpg.delete_item("unknown_words_window")
-    if dpg.does_item_exist("known_words_window"):
-        dpg.delete_item("known_words_window")
-    unknown_words_table()
-    known_words_table()
+    if dpg.does_item_exist("tables_container"):
+        dpg.delete_item("tables_container", children_only=True)
+        with dpg.group(horizontal=True, parent="tables_container"):
+            unknown_words_table()
+            known_words_table()
 
 def add_word(sender, app_data, user_data):
     value = dpg.get_value("input_word")
