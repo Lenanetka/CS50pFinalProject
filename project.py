@@ -40,9 +40,9 @@ def add_word(text: str):
         return
     global words_known, words_unknown
     words = words_unknown + words_known
-    for w in words:
-        if w.word == text:
-            return
+    if text in words:
+        print("Skip duplicate.")
+        return
     words_unknown.insert(0, Word(text))
     print (f"Word '{text}' added to unknown words.")
 

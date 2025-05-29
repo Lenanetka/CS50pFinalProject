@@ -14,6 +14,13 @@ class Word:
     def __str__(self):
         return self.word
     
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.word == other
+        if not isinstance(other, Word):
+            return False
+        return self.word == other.word and self.added == other.added and self.learned == other.learned
+    
     def _from_dictionary(self, data: dict) -> 'Word':
         keys = list(data.keys())
         if "word" in keys:

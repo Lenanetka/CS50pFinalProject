@@ -39,6 +39,15 @@ def test_word_str():
     word = Word("test")
     assert str(word) == "test"
 
+def test_word_eq():
+    word1 = Word("test")
+    word2 = Word("test")
+    word3 = Word("different")
+    assert word1 == word2
+    assert word1 != word3
+    assert word1 == "test"
+    assert word1 != "different"
+
 def test_word_dictionary():
     word = Word("test", date(2023, 10, 1), date(2023, 10, 2))
     expected_dict = {
