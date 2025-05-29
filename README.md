@@ -90,3 +90,7 @@ The "Delete" button removes a word from all lists and deletes its associated aud
 * Other speech tool `subprocess.run(["say", word])` was great for macOS but not supported by Windows / Linux
 * Finally, `gTTS` was chosen for audio generation and `pygame` for playback, ensuring cross-platform compatibility.
 * Writing tests helped me to catch few bugs and I needed to slightly refactor code to make it testable.
+
+## CS50P Certificate
+
+<img src="CS50P.png" height="600">
