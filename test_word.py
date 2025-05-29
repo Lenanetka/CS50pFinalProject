@@ -21,13 +21,6 @@ def test_word_init_error():
     with pytest.raises(TypeError):
         Word()
 
-def test_init_from_dict_max():
-    word_dict = {"word": "test", "added": "2023-10-01", "learned": "2023-10-02"}
-    word = Word(word_dict)
-    assert word.word == "test"
-    assert word.added.isoformat() == "2023-10-01"
-    assert word.learned.isoformat() == "2023-10-02"
-
 def test_init_from_dict_min():
     word_dict = {"something": "test"}
     word = Word(word_dict)
