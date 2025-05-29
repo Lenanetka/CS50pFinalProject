@@ -6,24 +6,17 @@ class Word:
     WORDS_CSV = "words.csv"
 
     def __init__(self, word, added=None, learned=None):
+        self.added = added
+        self.learned = learned
         if isinstance(word, dict):
-            self.from_dictionary(word)
+            self._from_dictionary(word)
         else:
             self.word = word
-            self.added = added
-            self.learned = learned
-
+ 
     def __str__(self):
         return self.word
-
-    def dictionary(self) -> dict:
-        return {
-            "word": self.word,
-            "added": self.added.isoformat() if self.added else None,
-            "learned": self.learned.isoformat() if self.learned else None
-        }
     
-    def from_dictionary(self, data: dict) -> 'Word':
+    def _from_dictionary(self, data: dict) -> 'Word':
         keys = list(data.keys())
         if "word" in keys:
             self.word = data["word"]
@@ -34,7 +27,14 @@ class Word:
         if "learned" in keys:
             self.learned = data["learned"]
         return self
-    
+
+    def dictionary(self) -> dict:
+        return {
+            "word": self.word,
+            "added": self.added.isoformat() if self.added else None,
+            "learned": self.learned.isoformat() if self.learned else None
+        }
+
     def learn(self) -> 'Word':
         if not self.is_known:
             self.learned = date.today()
