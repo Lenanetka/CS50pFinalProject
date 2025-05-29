@@ -3,8 +3,19 @@ import project
 import os
 from word import Word
 
+def generate_test_csv():
+    with open("test.csv", "w") as f:
+        f.write("word,added,learned\n")
+        f.write("cat,2022-10-30,2022-11-24\n")
+        f.write("dog,2023-01-01,\n")
+        f.write("spider,test,test\n")
+
+def generate_empty_csv():
+    with open("empty.csv", "w") as f:
+        f.write("")
+
 def test_set_words_csv():
-    path = "test/test_words.csv"
+    path = "test_words.csv"
     project.set_words_csv(path)
     assert project.WORDS_CSV == path
 
@@ -19,7 +30,8 @@ def test_set_words_csv_error():
         project.set_words_csv(123)
 
 def test_load_words():
-    project.set_words_csv("test/test.csv")
+    generate_test_csv()
+    project.set_words_csv("test.csv")
     word_cat = Word({"word": "cat", "added": "2022-10-30", "learned": "2022-11-24"})
     word_dog = Word({"word": "dog", "added": "2023-01-01", "learned": ""})
     word_spider = Word({"word": "spider", "added": "test", "learned": "test"})
@@ -33,20 +45,22 @@ def test_load_words():
     assert project.words_unknown[0] == word_dog
 
 def test_load_words_empty():
-    project.set_words_csv("test/empty.csv")
+    generate_empty_csv()
+    project.set_words_csv("empty.csv")
     project.load_words()
     assert len(project.words_known) == 0
     assert len(project.words_unknown) == 0
 
 def test_load_words_non_existed():
-    project.set_words_csv("test/non_existed.csv")
+    project.set_words_csv("non_existed.csv")
     project.load_words()
     assert len(project.words_known) == 0
     assert len(project.words_unknown) == 0
 
 def test_save_words():
-    original_path = "test/test.csv"
-    save_path = "test/save.csv"
+    generate_test_csv()
+    original_path = "test.csv"
+    save_path = "save.csv"
     try:
         os.remove(save_path)
     except FileNotFoundError:
