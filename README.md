@@ -6,7 +6,7 @@ This Python project helps to improve English pronunciation by listening correct 
 
 The project was inspired by my own list of "hard" words, because I didn't want to search them online each time.
 
-<img src="demo.png" height="600">
+<img src="demo.png" max-height="600">
 
 ## Getting Started
 
@@ -93,4 +93,4 @@ The "Delete" button removes a word from all lists and deletes its associated aud
 
 ## CS50P Certificate
 
-<img src="CS50P.png" height="600">
+<img src="CS50P.png" max-height="600">
